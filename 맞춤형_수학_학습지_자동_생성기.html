@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>맞춤형 수학 학습지 자동 생성기</title>
+  <style>
+    /* ==========================================================================
+       1. 디자인 시스템 & 기본 스타일 (초등학교 맞춤형 산뜻하고 깔끔한 테마)
+       ========================================================================== */
+    :root {
+      --primary-color: #3b82f6;
+      --primary-hover: #2563eb;
+      --success-color: #10b981;
+      --success-hover: #059669;
+      --danger-color: #ef4444;
+      --accent-color: #f59e0b;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    body {
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Malgun Gothic", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 24px;
+    }
+
+    /* ==========================================================================
+       2. 상단 컨트롤 패널 (화면용 UI, 인쇄 시 숨김)
+       ========================================================================== */
+    .control-panel {
+      max-width: 900px;
+      margin: 0 auto 30px auto;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+      padding: 24px 28px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid #f1f5f9;
+    }
+
+    .panel-header .icon {
+      font-size: 28px;
+    }
+
+    .panel-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .panel-header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group select {
+      height: 42px;
+      padding: 8px 14px;
+      font-size: 15px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 8px;
+      outline: none;
+      background: #ffffff;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .preset-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .preset-btn {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .preset-btn:hover {
+      background: #dbeafe;
+      border-color: #93c5fd;
+    }
+
+    .analysis-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-top: 6px;
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-top: 14px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+    .btn-success:hover {
+      background-color: var(--success-hover);
+    }
+
+    .btn-outline {
+      background-color: white;
+      border: 1.5px solid var(--border-color);
+      color: #334155;
+    }
+    .btn-outline:hover {
+      background-color: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .btn-outline.active {
+      background-color: #fef2f2;
+      border-color: #fca5a5;
+      color: #dc2626;
+    }
+
+    /* ==========================================================================
+       3. A4 학습지 컨테이너 & 인쇄 규격
+       ========================================================================== */
+    .worksheet-container {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: white;
+      padding: 16mm 18mm 18mm 18mm;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      border-radius: 4px;
+      position: relative;
+    }
+
+    /* 3-1. 고정 헤더 */
+    .worksheet-header {
+      border: 2px solid #1e293b;
+      border-radius: 8px;
+      padding: 14px 20px;
+      margin-bottom: 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fafafa;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .school-info {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.3px;
+    }
+
+    .sheet-title {
+      font-size: 14px;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .name-field {
+      display: inline-block;
+      min-width: 140px;
+      border-bottom: 1.5px solid #0f172a;
+      padding-bottom: 2px;
+      text-align: center;
+    }
+
+    .score-stamp {
+      width: 65px;
+      height: 48px;
+      border: 1.5px dashed #94a3b8;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* 3-2. 문제 그리드 배치 */
+    .problems-grid {
+      display: grid;
+      gap: 16px 20px;
+      width: 100%;
+    }
+
+    /* 단(열) 개수별 그리드 클래스 */
+    .grid-col-1 { grid-template-columns: 1fr; }
+    .grid-col-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-col-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-col-4 { grid-template-columns: repeat(4, 1fr); }
+
+    /* 개별 문제 카드 */
+    .problem-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: #ffffff;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    /* 여백 크기별 높이 설정 */
+    .spacing-sm .problem-card { min-height: 80px; }
+    .spacing-md .problem-card { min-height: 115px; }
+    .spacing-lg .problem-card { min-height: 150px; }
+
+    .problem-top {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .problem-number {
+      font-weight: 800;
+      font-size: 15px;
+      color: #1e293b;
+      min-width: 26px;
+    }
+
+    .problem-expression {
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 17px;
+      font-weight: 600;
+      color: #0f172a;
+      letter-spacing: 0.5px;
+    }
+
+    /* 분수 렌더링 스타일 (가로선 형태) */
+    .fraction {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      padding: 0 4px;
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    .fraction .numerator {
+      border-bottom: 1.5px solid #0f172a;
+      padding-bottom: 2px;
+    }
+
+    .fraction .denominator {
+      padding-top: 2px;
+    }
+
+    .math-operator {
+      margin: 0 5px;
+      font-weight: bold;
+    }
+
+    .equals-sign {
+      margin-left: 6px;
+      margin-right: 4px;
+    }
+
+    .answer-box {
+      display: inline-block;
+      width: 44px;
+      height: 26px;
+      border: 1.5px solid #94a3b8;
+      border-radius: 4px;
+      vertical-align: middle;
+      background: #fafafa;
+    }
+
+    /* 풀이 공간 */
+    .work-space {
+      flex: 1;
+      width: 100%;
+    }
+
+    /* 정답 표시 영역 */
+    .problem-answer {
+      display: none;
+      margin-top: 8px;
+      padding: 3px 8px;
+      background-color: #fee2e2;
+      border-left: 3px solid #ef4444;
+      border-radius: 3px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #b91c1c;
+    }
+
+    .problem-answer.show {
+      display: block;
+    }
+
+    /* ==========================================================================
+       4. 인쇄 전용 CSS (@media print 최적화)
+       ========================================================================== */
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm 12mm 12mm;
+    }
+
+    @media print {
+      body {
+        background-color: white !important;
+        padding: 0 !important;
+      }
+
+      .control-panel {
+        display: none !important;
+      }
+
+      .worksheet-container {
+        width: 100% !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+
+      .problem-card {
+        border-color: #cbd5e1 !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+      }
+
+      .problem-answer {
+        background-color: #fff !important;
+        border-left-color: #dc2626 !important;
+        color: #dc2626 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       상단 컨트롤 패널
+       ========================================================================== -->
+  <header class="control-panel">
+    <div class="panel-header">
+      <div class="icon">📐</div>
+      <div>
+        <h1>맞춤형 수학 학습지 자동 생성기</h1>
+        <p>예시 문제 하나만 입력하면 패턴을 분석하여 동일한 난이도의 수학 문제를 맞춤 제작합니다.</p>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <!-- 예시 문제 입력란 -->
+      <div class="form-group full-width">
+        <label for="exampleInput">예시 문제 입력 (패턴 분석용)</label>
+        <input type="text" id="exampleInput" value="12 + 34" placeholder="예: 1+2, 12+34, 5.2-1.4, 3/4+1/2, 10*5, 48/6">
+        
+        <!-- 추천 프리셋 칩 -->
+        <div class="preset-chips">
+          <button type="button" class="preset-btn" data-ex="3 + 5">한자리 덧셈 (3+5)</button>
+          <button type="button" class="preset-btn" data-ex="25 + 47">두자리 덧셈 (25+47)</button>
+          <button type="button" class="preset-btn" data-ex="64 - 28">두자리 뺄셈 (64-28)</button>
+          <button type="button" class="preset-btn" data-ex="7 * 8">구구단 곱셈 (7*8)</button>
+          <button type="button" class="preset-btn" data-ex="48 / 6">나눗셈 (48/6)</button>
+          <button type="button" class="preset-btn" data-ex="3.4 + 2.8">소수 덧셈 (3.4+2.8)</button>
+          <button type="button" class="preset-btn" data-ex="5.6 - 1.9">소수 뺄셈 (5.6-1.9)</button>
+          <button type="button" class="preset-btn" data-ex="2/5 + 1/5">동분모 덧셈 (2/5+1/5)</button>
+          <button type="button" class="preset-btn" data-ex="1/3 + 1/2">이분모 덧셈 (1/3+1/2)</button>
+          <button type="button" class="preset-btn" data-ex="12 + 4 * 3">혼합 계산 (12+4*3)</button>
+        </div>
+
+        <div id="patternSummary" class="analysis-badge">
+          🔍 분석된 패턴: <span>두 자리 정수 + 두 자리 정수</span>
+        </div>
+      </div>
+
+      <!-- 문제 개수 -->
+      <div class="form-group">
+        <label for="problemCount">문제 개수</label>
+        <input type="number" id="problemCount" value="20" min="1" max="100">
+      </div>
+
+      <!-- 다단(열) 설정 -->
+      <div class="form-group">
+        <label for="columnCount">문제지 열(단) 설정</label>
+        <select id="columnCount">
+          <option value="1">1단 (넓은 풀이)</option>
+          <option value="2" selected>2단 (표준 연산지)</option>
+          <option value="3">3단 (콤팩트 다단)</option>
+          <option value="4">4단 (빠른 연산 훈련)</option>
+        </select>
+      </div>
+
+      <!-- 풀이 여백 설정 -->
+      <div class="form-group">
+        <label for="spacingSize">문제 풀이 여백</label>
+        <select id="spacingSize">
+          <option value="sm">좁게 (많은 문제 배치)</option>
+          <option value="md" selected>보통 (적정 여백)</option>
+          <option value="lg">넓게 (넉넉한 풀이 공간)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 버튼 그룹 -->
+    <div class="button-group">
+      <button type="button" id="btnGenerate" class="btn btn-primary">
+        <span>🎲</span> 문제지 생성
+      </button>
+      <button type="button" id="btnToggleAnswer" class="btn btn-outline">
+        <span>👁️</span> 정답지 보기
+      </button>
+      <button type="button" id="btnPrint" class="btn btn-success">
+        <span>🖨️</span> 인쇄하기 (PDF 저장)
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       학습지 인쇄 출력 영역
+       ========================================================================== -->
+  <main class="worksheet-container spacing-md" id="worksheet">
+    <!-- 고정 헤더 영역 (소속 및 인적사항) -->
+    <header class="worksheet-header">
+      <div class="header-left">
+        <!-- 요구사항: "진영대창초등학교 4학년 1반" 고정 출력 -->
+        <h2 class="school-info">진영대창초등학교 4학년 1반</h2>
+        <span class="sheet-title" id="displayTitle">수학 맞춤 연산 학습지</span>
+      </div>
+      <div class="header-right">
+        <span>날짜: 202&nbsp;&nbsp;년&nbsp;&nbsp;&nbsp;&nbsp;월&nbsp;&nbsp;&nbsp;&nbsp;일</span>
+        <span>이름: <span class="name-field"></span></span>
+        <div class="score-stamp">
+          <span>확인</span>
+          <span>( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 문제들이 동적으로 렌더링될 그리드 컨테이너 -->
+    <section class="problems-grid grid-col-2" id="problemsContainer">
+      <!-- JavaScript로 동적 생성된 문제가 삽입됩니다 -->
+    </section>
+  </main>
+
+  <!-- ==========================================================================
+       패턴 분석 및 문제 생성 엔진 스크립트
+       ========================================================================== -->
+  <script>
+    (function() {
+      // DOM 엘리먼트 캐싱
+      const exampleInput = document.getElementById('exampleInput');
+      const problemCountInput = document.getElementById('problemCount');
+      const columnCountSelect = document.getElementById('columnCount');
+      const spacingSizeSelect = document.getElementById('spacingSize');
+      const patternSummary = document.getElementById('patternSummary').querySelector('span');
+      const worksheet = document.getElementById('worksheet');
+      const problemsContainer = document.getElementById('problemsContainer');
+      const btnGenerate = document.getElementById('btnGenerate');
+      const btnToggleAnswer = document.getElementById('btnToggleAnswer');
+      const btnPrint = document.getElementById('btnPrint');
+      const presetButtons = document.querySelectorAll('.preset-btn');
+
+      let currentProblems = [];
+      let isAnswerVisible = false;
+
+      /* ==========================================================================
+         수학적 유틸리티 함수 (최대공약수, 난수 생성)
+         ========================================================================== */
+      function gcd(a, b) {
+        a = Math.abs(a);
+        b = Math.abs(b);
+        while (b) {
+          const t = b;
+          b = a % b;
+          a = t;
+        }
+        return a;
+      }
+
+      function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function getIntByDigits(digits) {
+        if (digits <= 1) return getRandomInt(1, 9);
+        const min = Math.pow(10, digits - 1);
+        const max = Math.pow(10, digits) - 1;
+        return getRandomInt(min, max);
+      }
+
+      function getDecimal(intDigits, decDigits) {
+        const intPart = getIntByDigits(intDigits);
+        const minDec = 1;
+        const maxDec = Math.pow(10, decDigits) - 1;
+        const decPart = getRandomInt(minDec, maxDec);
+        const decString = decPart.toString().padStart(decDigits, '0');
+        return parseFloat(`${intPart}.${decString}`);
+      }
+
+      /* ==========================================================================
+         패턴 분석기 (Pattern Analyzer)
+         ========================================================================== */
+      function analyzeExpression(rawInput) {
+        let str = rawInput.trim()
+          .replace(/×/g, '*')
+          .replace(/÷/g, '/')
+          .replace(/＋/g, '+')
+          .replace(/－/g, '-');
+
+        // 분수 연산 패턴 탐지 (예: 3/4 + 1/2)
+        const fractionOpRegex = /^\s*(\d+)\s*\/\s*(\d+)\s*([+\-*\/])\s*(\d+)\s*\/\s*(\d+)\s*$/;
+        const fracMatch = str.match(fractionOpRegex);
+
+        if (fracMatch) {
+          const n1 = parseInt(fracMatch[1], 10);
+          const d1 = parseInt(fracMatch[2], 10);
+          const op = fracMatch[3];
+          const n2 = parseInt(fracMatch[4], 10);
+          const d2 = parseInt(fracMatch[5], 10);
+          const isSameDenom = (d1 === d2);
+
+          return {
+            type: 'fraction_operation',
+            op: op,
+            isSameDenom: isSameDenom,
+            num1Digits: n1.toString().length,
+            den1Digits: d1.toString().length,
+            num2Digits: n2.toString().length,
+            den2Digits: d2.toString().length,
+            description: `${isSameDenom ? '동분모' : '이분모'} 분수의 ${getOpKorean(op)}`
+          };
+        }
+
+        // 일반 2항 연산: A op B
+        const binaryRegex = /^\s*([0-9.]+)\s*([+\-*\/])\s*([0-9.]+)\s*$/;
+        const binMatch = str.match(binaryRegex);
+
+        if (binMatch) {
+          const rawA = binMatch[1];
+          const op = binMatch[2];
+          const rawB = binMatch[3];
+
+          const isDecA = rawA.includes('.');
+          const isDecB = rawB.includes('.');
+
+          // 소수 연산
+          if (isDecA || isDecB) {
+            const decPartA = isDecA ? rawA.split('.')[1].length : 0;
+            const decPartB = isDecB ? rawB.split('.')[1].length : 0;
+            const maxDec = Math.max(decPartA, decPartB, 1);
+            return {
+              type: 'decimal_operation',
+              op: op,
+              int1Digits: rawA.split('.')[0].length,
+              dec1Digits: decPartA || 1,
+              int2Digits: rawB.split('.')[0].length,
+              dec2Digits: decPartB || 1,
+              maxDec: maxDec,
+              description: `소수 ${maxDec}자리수 ${getOpKorean(op)}`
+            };
+          }
+
+          // 자연수 나눗셈 (초등 특성상 나누어떨어지는 패턴 파악)
+          if (op === '/') {
+            const a = parseInt(rawA, 10);
+            const b = parseInt(rawB, 10);
+            const dividesEvenly = (b !== 0 && a % b === 0);
+            return {
+              type: 'division_integer',
+              op: '/',
+              digitsA: rawA.length,
+              digitsB: rawB.length,
+              dividesEvenly: dividesEvenly,
+              description: `${rawA.length}자리수 ÷ ${rawB.length}자리수 나눗셈`
+            };
+          }
+
+          // 자연수 사칙연산 (+, -, *)
+          return {
+            type: 'integer_operation',
+            op: op,
+            digitsA: rawA.length,
+            digitsB: rawB.length,
+            description: `${rawA.length}자리수와 ${rawB.length}자리수의 ${getOpKorean(op)}`
+          };
+        }
+
+        // 3항 혼합 연산 (예: 12 + 4 * 3, (12+4)*3 등)
+        const mixedRegex = /^\s*\(?\s*(\d+)\s*([+\-*\/])\s*(\d+)\s*\)?\s*([+\-*\/])\s*(\d+)\s*$/;
+        const mixMatch = str.match(mixedRegex);
+        if (mixMatch) {
+          const hasParen = str.includes('(') && str.includes(')');
+          return {
+            type: 'mixed_operation',
+            hasParen: hasParen,
+            op1: mixMatch[2],
+            op2: mixMatch[4],
+            d1: mixMatch[1].length,
+            d2: mixMatch[3].length,
+            d3: mixMatch[5].length,
+            description: `${hasParen ? '괄호가 있는 ' : ''}혼합 계산`
+          };
+        }
+
+        // 기본 fallback
+        return {
+          type: 'integer_operation',
+          op: '+',
+          digitsA: 1,
+          digitsB: 1,
+          description: '기본 한자리수 덧셈'
+        };
+      }
+
+      function getOpKorean(op) {
+        switch(op) {
+          case '+': return '덧셈';
+          case '-': return '뺄셈';
+          case '*': return '곱셈';
+          case '/': return '나눗셈';
+          default: return '연산';
+        }
+      }
+
+      function getOpSymbol(op) {
+        if (op === '*') return '×';
+        if (op === '/') return '÷';
+        return op;
+      }
+
+      /* ==========================================================================
+         문제 생성기 (Problem Generator)
+         ========================================================================== */
+      function generateSingleProblem(pattern) {
+        switch (pattern.type) {
+          /* 1) 분수 연산 */
+          case 'fraction_operation': {
+            let den1, den2, num1, num2;
+            if (pattern.isSameDenom) {
+              den1 = den2 = (pattern.den1Digits === 1) ? getRandomInt(3, 9) : getRandomInt(10, 20);
+              num1 = getRandomInt(1, den1 - 1);
+              num2 = getRandomInt(1, den1 - 1);
+            } else {
+              den1 = (pattern.den1Digits === 1) ? getRandomInt(2, 9) : getRandomInt(10, 16);
+              den2 = (pattern.den2Digits === 1) ? getRandomInt(2, 9) : getRandomInt(10, 16);
+              while (den1 === den2) den2 = getRandomInt(2, 9);
+              num1 = getRandomInt(1, den1 - 1);
+              num2 = getRandomInt(1, den2 - 1);
+            }
+
+            // 뺄셈 시 음수 방지 (첫번째 분수가 더 크거나 같게)
+            if (pattern.op === '-') {
+              if (num1 / den1 < num2 / den2) {
+                [num1, num2] = [num2, num1];
+                [den1, den2] = [den2, den1];
+              }
+            }
+
+            let ansNum, ansDen;
+            if (pattern.op === '+') {
+              ansNum = num1 * den2 + num2 * den1;
+              ansDen = den1 * den2;
+            } else if (pattern.op === '-') {
+              ansNum = num1 * den2 - num2 * den1;
+              ansDen = den1 * den2;
+            } else if (pattern.op === '*') {
+              ansNum = num1 * num2;
+              ansDen = den1 * den2;
+            } else if (pattern.op === '/') {
+              ansNum = num1 * den2;
+              ansDen = den1 * num2;
+            }
+
+            // 기약분수 약분 및 대분수 변환
+            const g = gcd(ansNum, ansDen);
+            const redNum = ansNum / g;
+            const redDen = ansDen / g;
+
+            let answerStr = '';
+            if (redDen === 1) {
+              answerStr = `${redNum}`;
+            } else if (redNum === 0) {
+              answerStr = `0`;
+            } else if (redNum > redDen) {
+              const whole = Math.floor(redNum / redDen);
+              const rem = redNum % redDen;
+              answerStr = rem === 0 ? `${whole}` : `${whole}과 ${rem}/${redDen} (또는 ${redNum}/${redDen})`;
+            } else {
+              answerStr = `${redNum}/${redDen}`;
+            }
+
+            const expressionHtml = `
+              <span class="fraction"><span class="numerator">${num1}</span><span class="denominator">${den1}</span></span>
+              <span class="math-operator">${getOpSymbol(pattern.op)}</span>
+              <span class="fraction"><span class="numerator">${num2}</span><span class="denominator">${den2}</span></span>
+              <span class="equals-sign">=</span>
+              <span class="answer-box"></span>
+            `;
+
+            return { html: expressionHtml, answer: answerStr };
+          }
+
+          /* 2) 소수 연산 */
+          case 'decimal_operation': {
+            let a = getDecimal(pattern.int1Digits, pattern.dec1Digits);
+            let b = getDecimal(pattern.int2Digits, pattern.dec2Digits);
+
+            if (pattern.op === '-' && a < b) [a, b] = [b, a];
+
+            let ans = 0;
+            if (pattern.op === '+') ans = a + b;
+            else if (pattern.op === '-') ans = a - b;
+            else if (pattern.op === '*') ans = a * b;
+            else if (pattern.op === '/') ans = a / b;
+
+            const precision = Math.min(pattern.maxDec + 1, 4);
+            const answerStr = parseFloat(ans.toFixed(precision)).toString();
+
+            const expressionHtml = `
+              <span>${a}</span>
+              <span class="math-operator">${getOpSymbol(pattern.op)}</span>
+              <span>${b}</span>
+              <span class="equals-sign">=</span>
+              <span class="answer-box"></span>
+            `;
+
+            return { html: expressionHtml, answer: answerStr };
+          }
+
+          /* 3) 자연수 나눗셈 */
+          case 'division_integer': {
+            let a, b, quotient, remainder;
+            b = getIntByDigits(pattern.digitsB);
+            if (b === 0) b = 2;
+
+            if (pattern.dividesEvenly) {
+              const quotientDigits = Math.max(1, pattern.digitsA - pattern.digitsB + 1);
+              quotient = getIntByDigits(quotientDigits);
+              a = b * quotient;
+              remainder = 0;
+            } else {
+              a = getIntByDigits(pattern.digitsA);
+              if (a < b) [a, b] = [b, a];
+              quotient = Math.floor(a / b);
+              remainder = a % b;
+            }
+
+            const answerStr = remainder === 0 ? `${quotient}` : `${quotient} ... ${remainder}`;
+
+            const expressionHtml = `
+              <span>${a}</span>
+              <span class="math-operator">÷</span>
+              <span>${b}</span>
+              <span class="equals-sign">=</span>
+              <span class="answer-box"></span>
+            `;
+
+            return { html: expressionHtml, answer: answerStr };
+          }
+
+          /* 4) 3항 혼합 연산 */
+          case 'mixed_operation': {
+            let n1 = getIntByDigits(pattern.d1);
+            let n2 = getIntByDigits(pattern.d2);
+            let n3 = getIntByDigits(pattern.d3);
+
+            let rawExpr = '';
+            let displayHtml = '';
+
+            if (pattern.hasParen) {
+              rawExpr = `(${n1} ${pattern.op1} ${n2}) ${pattern.op2} ${n3}`;
+              displayHtml = `
+                <span>(${n1} ${getOpSymbol(pattern.op1)} ${n2})</span>
+                <span class="math-operator">${getOpSymbol(pattern.op2)}</span>
+                <span>${n3}</span>
+              `;
+            } else {
+              rawExpr = `${n1} ${pattern.op1} ${n2} ${pattern.op2} ${n3}`;
+              displayHtml = `
+                <span>${n1}</span>
+                <span class="math-operator">${getOpSymbol(pattern.op1)}</span>
+                <span>${n2}</span>
+                <span class="math-operator">${getOpSymbol(pattern.op2)}</span>
+                <span>${n3}</span>
+              `;
+            }
+
+            let ans = 0;
+            try {
+              ans = Function(`"use strict"; return (${rawExpr});`)();
+              if (typeof ans === 'number' && !Number.isInteger(ans)) {
+                ans = parseFloat(ans.toFixed(2));
+              }
+            } catch(e) {
+              ans = '오류';
+            }
+
+            return {
+              html: `${displayHtml} <span class="equals-sign">=</span> <span class="answer-box"></span>`,
+              answer: ans.toString()
+            };
+          }
+
+          /* 5) 기본 자연수 연산 */
+          case 'integer_operation':
+          default: {
+            let a = getIntByDigits(pattern.digitsA);
+            let b = getIntByDigits(pattern.digitsB);
+
+            if (pattern.op === '-' && a < b) [a, b] = [b, a];
+
+            let ans = 0;
+            if (pattern.op === '+') ans = a + b;
+            else if (pattern.op === '-') ans = a - b;
+            else if (pattern.op === '*') ans = a * b;
+
+            const expressionHtml = `
+              <span>${a}</span>
+              <span class="math-operator">${getOpSymbol(pattern.op)}</span>
+              <span>${b}</span>
+              <span class="equals-sign">=</span>
+              <span class="answer-box"></span>
+            `;
+
+            return { html: expressionHtml, answer: ans.toString() };
+          }
+        }
+      }
+
+      /* ==========================================================================
+         문제지 렌더링 함수
+         ========================================================================== */
+      function renderWorksheet() {
+        const pattern = analyzeExpression(exampleInput.value);
+        patternSummary.textContent = pattern.description;
+
+        const count = Math.min(Math.max(parseInt(problemCountInput.value, 10) || 20, 1), 100);
+        const cols = parseInt(columnCountSelect.value, 10) || 2;
+        const spacing = spacingSizeSelect.value || 'md';
+
+        problemsContainer.className = `problems-grid grid-col-${cols}`;
+        worksheet.className = `worksheet-container spacing-${spacing}`;
+
+        currentProblems = [];
+        problemsContainer.innerHTML = '';
+
+        for (let i = 1; i <= count; i++) {
+          const problem = generateSingleProblem(pattern);
+          currentProblems.push(problem);
+
+          const card = document.createElement('article');
+          card.className = 'problem-card';
+          card.innerHTML = `
+            <div class="problem-top">
+              <span class="problem-number">${i}.</span>
+              <div class="problem-expression">${problem.html}</div>
+            </div>
+            <div class="work-space"></div>
+            <div class="problem-answer ${isAnswerVisible ? 'show' : ''}">
+              정답: <strong>${problem.answer}</strong>
+            </div>
+          `;
+          problemsContainer.appendChild(card);
+        }
+      }
+
+      /* ==========================================================================
+         정답지 토글 기능
+         ========================================================================== */
+      function toggleAnswers() {
+        isAnswerVisible = !isAnswerVisible;
+        const answerBoxes = document.querySelectorAll('.problem-answer');
+        answerBoxes.forEach(box => {
+          if (isAnswerVisible) {
+            box.classList.add('show');
+          } else {
+            box.classList.remove('show');
+          }
+        });
+
+        if (isAnswerVisible) {
+          btnToggleAnswer.classList.add('active');
+          btnToggleAnswer.innerHTML = '<span>🙈</span> 정답지 숨기기';
+        } else {
+          btnToggleAnswer.classList.remove('active');
+          btnToggleAnswer.innerHTML = '<span>👁️</span> 정답지 보기';
+        }
+      }
+
+      /* ==========================================================================
+         이벤트 리스너 연결
+         ========================================================================== */
+      btnGenerate.addEventListener('click', renderWorksheet);
+      btnToggleAnswer.addEventListener('click', toggleAnswers);
+      btnPrint.addEventListener('click', () => window.print());
+
+      exampleInput.addEventListener('input', () => {
+        const pattern = analyzeExpression(exampleInput.value);
+        patternSummary.textContent = pattern.description;
+      });
+
+      columnCountSelect.addEventListener('change', () => {
+        problemsContainer.className = `problems-grid grid-col-${columnCountSelect.value}`;
+      });
+
+      spacingSizeSelect.addEventListener('change', () => {
+        worksheet.className = `worksheet-container spacing-${spacingSizeSelect.value}`;
+      });
+
+      presetButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          exampleInput.value = btn.getAttribute('data-ex');
+          renderWorksheet();
+        });
+      });
+
+      // 초기 실행: 기본 20문제 자동 생성
+      renderWorksheet();
+    })();
+  </script>
+</body>
+</html>
